@@ -1052,6 +1052,7 @@ ul.language-switcher-locale-url {
 }
 
 .menu {
+  background-color: #427b73;
   position: absolute;
   right: 0px;
   bottom: 5px;
