@@ -1,0 +1,105 @@
+<?php
+
+function hvirfill_schema() {
+
+    $schema['hvirfill_hidden'] = array(
+        'description' => t('Store event ids to hide.'),
+        'fields' => array(
+            'fid' => array(
+                'type'        => 'serial',
+                'unsigned'    => true,
+                'not null'    => true,
+            ),
+            'event_id' => array(
+                'description' => t('User ID'),
+                'type'        => 'varchar',
+                'length'      => 255,
+                'not null'    => true,
+                'default'     => '',
+            ),
+            'time' => array(
+                'description' => t('Time'),
+                'type'        => 'int',
+                'size'        => 'big',
+                'not null'    => true,
+                'default'     => 0,
+            ),
+        ),
+        'primary key' => array(
+            'fid'
+        ),
+    );
+
+    $schema['hvirfill_bookmark'] = array(
+        'description' => t('Store bookmarked events.'),
+        'fields' => array(
+            'fid' => array(
+                'type'        => 'serial',
+                'unsigned'    => true,
+                'not null'    => true,
+            ),
+            'uid' => array(
+                'description' => t('Event ID'),
+                'type'        => 'varchar',
+                'length'      => 255,
+                'not null'    => true,
+                'default'     => '',
+            ),
+            'code' => array(
+                'description' => t('Identification conde'),
+                'type'        => 'varchar',
+                'length'      => 30,
+                'not null'    => true,
+                'default'     => '',
+            ),
+            'time' => array(
+                'description' => t('Time'),
+                'type'        => 'int',
+                'size'        => 'big',
+                'not null'    => true,
+                'default'     => 0,
+            ),
+        ),
+        'primary key' => array(
+            'fid'
+        ),
+    );
+
+    return $schema;
+}
+
+function hvirfill_install() {
+    drupal_install_schema('hvirfill_hidden');
+    drupal_install_schema('hvirfill_bookmark');
+    drupal_set_message(t('Hvirfill is now correctly installed'));
+
+    $default_settings = array(
+        'columns' => '5',
+        'events_no' => '30',
+        'tags' => array(),
+        'is_start_date' => 0,
+        'start_date' => '',
+        'is_end_date' => 0,
+        'end_date' => '',
+        'is_search' => 1,
+        'is_datepicker' => 1,
+        'show_time' => 0,
+        'is_bookmark' => 0,
+        'is_english_fallback' => 1,
+        'main_page_path' => '',
+        'sample_events_no' => '5',
+        'sample_is_random' => 0,
+        'sample_show_time' => 1,
+    );
+
+    variable_set('hvirfill_settings', json_encode($default_settings));
+}
+
+function hvirfill_uninstall() {
+    drupal_uninstall_schema('hvirfill_hidden');
+    drupal_uninstall_schema('hvirfill_bookmark');
+    variable_del('hvirfill_settings');
+}
+
+
+

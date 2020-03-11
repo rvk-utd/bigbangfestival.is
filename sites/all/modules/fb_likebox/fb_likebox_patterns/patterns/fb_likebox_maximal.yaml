@@ -1,0 +1,71 @@
+# YAML Module Provided Block Pattern
+# QScience
+
+info:
+  title: FB Likebox (maximal configuration)
+  description: Places a FB Likebox with a maximal configuration in the first sidebar of the bartik theme.
+  author: QScience
+  category: Facebook Likebox
+  version: 2.0
+  core: 7.x
+  author_email: drozas@surrey.ac.uk
+  author_website: http://qlectives.eu/
+
+actions:
+  - modify:
+      tag: block
+      module: fb_likebox
+      delta: 0
+      status: 1
+      weight: -6
+      theme: bartik
+      region: sidebar_first
+      title: FB Likebox (Default configuration)
+
+# Facebook Likebox specific settings
+  -
+    modify:
+      tag: variables
+      0:
+        name: fb_likebox_url
+        value: >
+          https://www.facebook.com/FacebookDevelopers
+      1:
+        name: fb_likebox_app_id
+        value: ""
+      2:
+        name: fb_likebox_stream
+        value: "1"
+      3:
+        name: fb_likebox_events
+        value: "1"
+      4:
+        name: fb_likebox_messages
+        value: "1"
+      5:
+        name: fb_likebox_hide_header
+        value: "0"
+      6:
+        name: fb_likebox_show_faces
+        value: "1"
+      7:
+        name: fb_likebox_hide_cta
+        value: "0"
+      8:
+        name: fb_likebox_small_header
+        value: "0"
+      9:
+        name: fb_likebox_adapt_container_width
+        value: "1"
+      10:
+        name: fb_likebox_title
+        value: Like us on Facebook
+      11:
+        name: fb_likebox_width
+        value: "300"
+      12:
+        name: fb_likebox_height
+        value: "500"
+      13:
+        name: fb_likebox_language
+        value: "en_EN"

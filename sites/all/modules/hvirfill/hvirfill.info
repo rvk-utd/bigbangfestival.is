@@ -1,0 +1,9 @@
+name = Hvirfill
+description = Hvirfill events module.
+core = 7.x
+version = "7.x-4.0-alpha2"
+core = "7.x"
+project = hvirfill
+dependencies[] = jquery_update
+configure = admin/config/hvirfill
+

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test</title>
+    <script src="http://dev.menningarnott.is/sites/all/modules/hvirfill/js/inline-0.9.2.js"></script>
+    <script src="http://dev.menningarnott.is/sites/all/modules/hvirfill/js/inline-extra-0.9.1.js"></script>
+</head>
+<body>
+
+<div id="fb-root"></div>
+
+<div>
+    <button id="test">Test</button>
+</div>
+
+<div>
+    Name: <span id="name"></span>
+</div>
+
+<script type="text/javascript">
+    
+    document.getElementById('test').onclick = function() {
+
+        window.inline = new Inline();
+
+        var checkStatus = function(user) {
+            return user.status === 'connected';
+        }
+
+        inline.facebookInit('460901604090376');
+
+        inline.run(function() {
+            
+            var status = inline.facebookAPI(FB.getLoginStatus).check(checkStatus);
+            inline.ifnot(status, function() {
+                inline.facebookAPI(FB.login).check(checkStatus).catch(function() {
+                    inline.stop();
+                })
+            });
+            
+            inline.facebookAPI(FB.api, '/me').apply(function(user) {
+                document.getElementById('name').textContent = user.name;
+            });
+        });
+    }
+
+</script>
+
+<!--
+<script type="text/javascript">
+    
+    var inline = new Inline();
+
+    var checkStatus = function(user) {
+        return user.status === 'connected';
+    }
+
+    window.fbAsyncInit = function() {
+        inline.run(function() {
+            FB.init({
+                appId      : '460901604090376',
+                xfbml      : true,
+                cookie     : true,
+                version    : 'v2.4'
+            });
+        });
+        var status = inline.facebookAPI(FB.getLoginStatus).check(checkStatus);
+        inline.ifnot(status, function() {
+            inline.facebookAPI(FB.login).check(checkStatus).catch(function() {
+                inline.stop();
+            })
+        });
+        inline.facebookAPI(FB.api, '/me').apply(function(user) {
+            document.getElementById('name').textContent = user.name;
+        });
+    };
+
+    (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+</script>
+-->
+
+</body>
+</html>

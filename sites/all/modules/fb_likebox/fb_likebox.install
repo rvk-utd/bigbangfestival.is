@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Uninstall functions for the facebook likebox module.
+ */
+
+ /**
+ * Implements hook_uninstall().
+ */
+function fb_likebox_uninstall() {
+  variable_del('fb_likebox_url');
+  variable_del('fb_likebox_app_id');
+  variable_del('fb_likebox_stream');
+  variable_del('fb_likebox_events');
+  variable_del('fb_likebox_messages');
+  variable_del('fb_likebox_hide_header');
+  variable_del('fb_likebox_show_faces');
+  variable_del('fb_likebox_hide_cta');
+  variable_del('fb_likebox_small_header');
+  variable_del('fb_likebox_adapt_container_width');
+  variable_del('fb_likebox_title');
+  variable_del('fb_likebox_width');
+  variable_del('fb_likebox_height');
+  variable_del('fb_likebox_language');
+}

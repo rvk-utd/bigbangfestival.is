@@ -1,0 +1,311 @@
+<?php
+
+    include 'hvirfill.common.inc';
+
+    function hvirfill_menu() {
+
+        $items = array();
+
+        $items['admin/config/hvirfill'] = array(
+            'title'             => t('Hvirfill settings'),
+            'page callback'     => 'drupal_get_form',
+            'page arguments'    => array('hvirfill_settings_form'),
+            'access arguments'  => array('administer Hvirfill'),
+            'file'              => 'hvirfill.admin.inc',
+            'type'              => MENU_LOCAL_TASK,
+            'weight'            => 0,
+        );
+
+        $items['admin/config/hvirfill/settings'] = array(
+            'title'             => t('Hvirfill settings'),
+            'page callback'     => 'drupal_get_form',
+            'page arguments'    => array('hvirfill_settings_form'),
+            'access arguments'  => array('administer Hvirfill'),
+            'file'              => 'hvirfill.admin.inc',
+            'type'              => MENU_LOCAL_TASK,
+            'weight'            => 0,
+        );
+
+        $items['admin/config/hvirfill/sample'] = array(
+            'title'             => t('Sample settings'),
+            'page callback'     => 'drupal_get_form',
+            'page arguments'    => array('hvirfill_sample_form'),
+            'access arguments'  => array('administer Hvirfill'),
+            'file'              => 'hvirfill.admin.inc',
+            'type'              => MENU_LOCAL_TASK,
+            'weight'            => 1,
+        );
+
+        $items['admin/config/hvirfill/hidden'] = array(
+            'title'             => t('Hidden events'),
+            'page callback'     => 'hvirfill_hidden',
+            'access arguments'  => array('administer Hvirfill'),
+            'file'              => 'hvirfill.admin.inc',
+            'type'              => MENU_LOCAL_TASK,
+            'weight'            => 2,
+        );
+
+        $items['admin/config/hvirfill/hidden/add'] = array(
+            'title'             => 'Hvirfill - Add hidden event',
+            'page callback'     => 'drupal_get_form',
+            'page arguments'    => array('hvirfill_hidden_form'),
+            'access arguments'  => array('administer Hvirfill'),
+            'file'              => 'hvirfill.admin.inc',
+            'type'              => MENU_LOCAL_ACTION,
+            'weight'            => 3,
+        );
+
+        $items['admin/config/hvirfill/hidden/%/delete'] = array(
+            'title'             => 'Hvirfill - Delete hidden event',
+            'page callback'     => 'drupal_get_form',
+            'page arguments'    => array('hvirfill_hidden_delete', 4),
+            'access arguments'  => array('administer Hvirfill'),
+            'file'              => 'hvirfill.admin.inc',
+        );
+
+        $items['admin/config/hvirfill/bookmarks'] = array(
+            'title'             => t('User bookmarks'),
+            'page callback'     => 'hvirfill_bookmarks',
+            'access arguments'  => array('administer Hvirfill'),
+            'file'              => 'hvirfill.admin.inc',
+            'type'              => MENU_LOCAL_TASK,
+            'weight'            => 4,
+        );
+
+        $items['admin/config/hvirfill/bookmark/%/delete'] = array(
+            'title'             => 'Hvirfill - Delete bookmark',
+            'page callback'     => 'drupal_get_form',
+            'page arguments'    => array('hvirfill_bookmark_delete', 4),
+            'access arguments'  => array('administer Hvirfill'),
+            'file'              => 'hvirfill.admin.inc',
+        );
+
+        $items['hvirfill-hide-event'] = array(
+            'page callback'     => 'hvirfill_hide_event',
+            'access arguments'  => array('administer Hvirfill'),
+            'file'              => 'hvirfill.admin.inc',
+        );
+
+        $items['hvirfill-add-bookmark'] = array(
+            'page callback'     => 'hvirfill_add_bookmark',
+            'access arguments' => array('access content'),
+            'file'              => 'hvirfill.admin.inc',
+        );
+
+        $items['hvirfill-del-bookmark'] = array(
+            'page callback'     => 'hvirfill_del_bookmark',
+            'access arguments' => array('access content'),
+            'file'              => 'hvirfill.admin.inc',
+        );
+
+        $items['hvirfill-get-bookmarks'] = array(
+            'page callback'     => 'hvirfill_get_bookmarks',
+            'access arguments' => array('access content'),
+            'file'              => 'hvirfill.admin.inc',
+        );
+
+        $items['hvirfill-print-events'] = array(
+            'page callback'     => 'hvirfill_print_events',
+            'access arguments' => array('access content'),
+        );
+
+        return $items;
+    }
+
+    function hvirfill_permission() {
+        return array(
+            'administer Hvirfill' => array(
+                'title' => t('Administer Hvirfill'),
+            )
+        );
+    }
+
+    function hvirfill_block_info() {
+        $blocks['hvirfill_page'] = array(
+            'info' => t('Hvirfill main page'),
+            'region' => 'content',
+        );
+        $blocks['hvirfill_sample'] = array(
+            'info' => t('Hvirfill sample'),
+        );
+        return $blocks;
+    }
+
+    function hvirfill_block_view($delta='') {
+        switch ($delta) {
+            case 'hvirfill_page':
+                $block['content'] = hvirfill_page();
+                break;
+            case 'hvirfill_sample':
+                $block['content'] = hvirfill_sample();
+                break;
+        }
+        return $block;
+    }
+
+    function hvirfill_add_js($file, $options=null) {
+        $path = drupal_get_path('module', 'hvirfill') . '/js/' . $file;
+        drupal_add_js($path, $options);
+    }
+
+    function hvirfill_add_css($file, $options=null) {
+        $path = drupal_get_path('module', 'hvirfill') . '/css/' . $file;
+        drupal_add_css($path,$options);
+    }
+
+    function hvirfill_theme($existing, $type, $theme, $path) {
+        return array(
+            'hvirfill_view' => array(
+                'template' => 'hvirfill',
+            ),
+            'sample_view' => array(
+                'template' => 'sample',
+            ),
+            'admin_view' => array(
+                'template' => 'admin',
+            ),
+        );
+    }
+
+    function hvirfill_get_lang($is_english_fallback=false) {
+        global $language;
+        if ($is_english_fallback)
+            return $language->language == 'is' ? 'is' : 'en';
+        return $language->language;
+    }
+
+    function hvirfill_is_facebook_crawler() {
+        $agent = strtolower($_SERVER['HTTP_USER_AGENT']);
+        if (strpos($agent, 'facebookexternalhit') !== false)
+            return true;
+        if (strpos($agent, 'facebot') !== false)
+            return true;
+        return false;
+    }
+
+    function hvirfill_is_event_id() {
+        if (!isset($_GET['event']))
+            return false;
+        if (!preg_match('/^[a-f0-9]{24}$/', $_GET['event']))
+            return false;
+        return true;
+    }
+
+    function hvirfill_add_facebook_tag($key, $value) {
+        $element = array(
+            '#tag' => 'meta',
+            '#attributes' => array(
+                'property' => 'og:' . $key,
+                'content' => $value,
+            ),
+        );
+        drupal_add_html_head($element, 'facebook_og_' . $key);
+    }
+
+    function hvirfill_add_facebook_tags($lang) {
+        if (!hvirfill_is_event_id()) {
+            return;
+        }
+
+        $server = 'https://hvirfill.reykjavik.is';
+        $event_url = $server . '/get?_id=' . $_GET['event'];
+        $data = file_get_contents($event_url);
+        if ($data == false) {
+            return false;
+        }
+
+        $event = json_decode($data, true);
+        $title = str_replace('#', '', $event['language'][$lang]['title']);
+
+        $text = str_replace('#', '', $event['language'][$lang]['text']);
+        $text = preg_replace('/\n+/', '\n', $text);
+
+        hvirfill_add_facebook_tag('type', 'website');
+        hvirfill_add_facebook_tag('title', $title);
+        hvirfill_add_facebook_tag('description', $text);
+        hvirfill_add_facebook_tag('image', $server . '/images/' . $event['image']['medium']);
+        hvirfill_add_facebook_tag('url', $GLOBALS['base_url'] . $_SERVER['REQUEST_URI']);
+        hvirfill_add_facebook_tag('locale', $lang == 'is' ? 'is_IS' : 'en_US');
+    }
+
+    function hvirfill_get_hidden_uids() {
+        $ids = array();
+        $result = db_query("SELECT event_id FROM {hvirfill_hidden} ORDER BY time DESC");
+        foreach ($result as $row) {
+            $ids[] = $row->event_id;
+        }
+        return $ids;
+    }
+
+    function hvirfill_page() {
+
+        hvirfill_add_css('hvirfill.css', array('group' => CSS_THEME));
+        hvirfill_add_css('toggle-switch.css');
+
+        hvirfill_add_js('inline-0.9.4.js', array('group' => JS_LIBRARY));
+        hvirfill_add_js('inline-extra-0.9.0.js', array('group' => JS_LIBRARY));
+        hvirfill_add_js('rivets.bundled.min.js', array('group' => JS_LIBRARY));
+
+        hvirfill_add_js('moment-with-locales.min.js');
+        hvirfill_add_js('translation.js');
+        hvirfill_add_js('bindings.js');
+
+        $jsonConfig = variable_get('hvirfill_settings');
+        $config = json_decode($jsonConfig);
+        $lang = hvirfill_get_lang($config->is_english_fallback);
+
+        if (hvirfill_is_facebook_crawler()) {
+            hvirfill_add_facebook_tags($lang);
+        }
+
+        //hvirfill_add_facebook_tags($lang);
+
+        $context = array(
+            'lang' => $lang,
+            'module_path' => drupal_get_path('module', 'hvirfill'),
+            'uid' => hvirfill_is_event_id() ? $_GET['event'] : '',
+            'token' => hvirfill_set_token(),
+            'hidden' => json_encode(hvirfill_get_hidden_uids()),
+            'jsonConfig' => $jsonConfig,
+            'config' => $config,
+        );
+
+        return theme('hvirfill_view', $context);
+    }
+
+    function hvirfill_sample() {
+
+        hvirfill_add_css('hvirfill.css', array('group' => CSS_THEME));
+
+        hvirfill_add_js('inline-0.9.1.js', array('group' => JS_LIBRARY));
+        hvirfill_add_js('knockout-3.3.0.js', array('group' => JS_LIBRARY));
+
+        $jsonConfig = variable_get('hvirfill_settings');
+        $config = json_decode($jsonConfig);
+        $lang = hvirfill_get_lang($config->is_english_fallback);
+
+        $context = array(
+            'lang' => $lang,
+            'module_path' => drupal_get_path('module', 'hvirfill'),
+            'hidden' => json_encode(hvirfill_get_hidden_uids()),
+            'jsonConfig' => $jsonConfig,
+            'config' => $config,
+        );
+
+        return theme('sample_view', $context);
+    }
+
+    function hvirfill_print_events() {
+        $module_path = drupal_get_path('module', 'hvirfill');
+        $code = isset($_GET['code']) ?  $_GET['code'] : '';
+        $lang = hvirfill_get_lang();
+        $token = hvirfill_get_token();
+        $hidden = json_encode(hvirfill_get_hidden_uids());
+        include $module_path . '/print.php';
+    }
+
+    function hvirfill_cron() {
+        $max_age = time() - 6048000;
+        db_query("DELETE FROM {hvirfill_bookmark} WHERE time < $max_age");
+        db_query("DELETE FROM {hvirfill_hidden} WHERE time < $max_age");
+    }

@@ -1,0 +1,11 @@
+name = Block Export Import
+description = It will allow administrator to export all system specific block.
+core = 7.x
+configure = admin/structure/export-import-block
+dependencies[] = block
+
+; Information added by Drupal.org packaging script on 2019-12-10
+version = "7.x-2.35"
+core = "7.x"
+project = "block_export_import"
+datestamp = "1575969788"

@@ -1,0 +1,409 @@
+<?php
+
+/**
+ * @file
+ * Simple module that provides a configurable block with Facebook Likebox's plugin.
+ */
+
+/**
+ * Implements hook_block_info().
+ */
+function fb_likebox_block_info() {
+  $blocks['0']['info'] = t('@site_name on Facebook', array('@site_name' => variable_get('site_name', 'Default site name')));
+  $blocks['0']['cache'] = DRUPAL_NO_CACHE;
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function fb_likebox_block_configure($delta = '') {
+  switch ($delta) {
+    case '0':
+      // Facebook Widget settings.
+      $form['fb_likebox_display_settings'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Display options'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+      );
+      $form['fb_likebox_display_settings']['fb_likebox_url'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Facebook Page URL'),
+        '#default_value' => variable_get('fb_likebox_url', 'https://www.facebook.com/FacebookDevelopers'),
+        '#description' => t('Enter the Facebook Page URL. I.e.: https://www.facebook.com/FacebookDevelopers'),
+        '#required' => TRUE,
+      );
+      $form['fb_likebox_display_settings']['fb_likebox_app_id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Facebook App ID'),
+        '#default_value' => variable_get('fb_likebox_app_id', ''),
+      );
+      $form['fb_likebox_display_settings']['page_tabs'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Page Tabs: Timeline, Events & Messages'),
+        '#collapsible' => FALSE,
+        '#collapsed' => FALSE,
+      );
+      $form['fb_likebox_display_settings']['page_tabs']['fb_likebox_stream'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Show posts from the Page's timeline"),
+        '#default_value' => variable_get('fb_likebox_stream', '1'),
+      );
+      $form['fb_likebox_display_settings']['page_tabs']['fb_likebox_events'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Show events from the Page"),
+        '#default_value' => variable_get('fb_likebox_events', '0'),
+      );
+      $form['fb_likebox_display_settings']['page_tabs']['fb_likebox_messages'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Show messages from the Page"),
+        '#default_value' => variable_get('fb_likebox_messages', '0'),
+        '#description' => t('To enable messaging on your Facebook page, "Allow people to contact my Page privately by showing the Message button" (Direct Link: https://www.facebook.com/{your-page-name}/settings/?tab=settings&section=messages&view).'),
+      );
+      $form['fb_likebox_display_settings']['fb_likebox_hide_header'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Hide cover photo in the header'),
+        '#default_value' => variable_get('fb_likebox_hide_header', '0'),
+      );
+      $form['fb_likebox_display_settings']['fb_likebox_show_faces'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Show profile photos when friends like this'),
+        '#default_value' => variable_get('fb_likebox_show_faces', '1'),
+      );
+      $form['fb_likebox_display_settings']['fb_likebox_hide_cta'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Hide the custom call to action button (if available)'),
+        '#default_value' => variable_get('fb_likebox_hide_cta', '0'),
+      );
+       $form['fb_likebox_display_settings']['fb_likebox_small_header'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Use the small header instead'),
+        '#default_value' => variable_get('fb_likebox_small_header', '0'),
+      );
+       $form['fb_likebox_display_settings']['fb_likebox_adapt_container_width'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Try to fit inside the container width'),
+        '#default_value' => variable_get('fb_likebox_adapt_container_width', '1'),
+      );
+      $form['fb_likebox_display_settings']['fb_likebox_title'] = array(
+        '#type' => 'textfield',
+        '#title' => t('iFrame title attribute'),
+        '#default_value' => variable_get('fb_likebox_title', 'Like us on Facebook'),
+        '#description' => t('The value of the title attribute.'),
+        '#required' => TRUE,
+      );
+      $form['fb_likebox_display_settings']['fb_likebox_width'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Width'),
+        '#default_value' => variable_get('fb_likebox_width', '340'),
+        '#description' => t('The width of the Facebook likebox. Must be a number between 180 and 500, limits included.'),
+        '#required' => TRUE,
+      );
+      $form['fb_likebox_display_settings']['fb_likebox_height'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Height'),
+        '#default_value' => variable_get('fb_likebox_height', '500'),
+        '#description' => t('The height of the plugin in pixels. Must be a number bigger than 70.'),
+        '#required' => TRUE,
+      );
+      $form['fb_likebox_display_settings']['fb_likebox_language'] = array(
+       		'#type' => 'select',
+       		'#title' => t('Choose your language'),
+       		'#options' => _fb_likebox_languages(),
+       		'#default_value' => variable_get('fb_likebox_language', 'en_EN'),
+          '#description' => t('This is the language the Page plugin will be displayed in.'),
+       );
+      return $form;
+  }
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function fb_likebox_block_view($delta = '') {
+  switch ($delta) {
+    case '0':
+      $block['content'] = _fb_likebox_block_view();
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function fb_likebox_block_save($delta = '', $edit = array()) {
+  switch ($delta) {
+    case '0':
+      // Set the values given in the block form
+      variable_set('fb_likebox_url', check_url($edit['fb_likebox_url']));
+      variable_set('fb_likebox_app_id', check_plain($edit['fb_likebox_app_id']));
+      variable_set('fb_likebox_hide_header', check_plain($edit['fb_likebox_hide_header']));
+      variable_set('fb_likebox_stream', check_plain($edit['fb_likebox_stream']));
+      variable_set('fb_likebox_events', check_plain($edit['fb_likebox_events']));
+      variable_set('fb_likebox_messages', check_plain($edit['fb_likebox_messages']));
+      variable_set('fb_likebox_show_faces', check_plain($edit['fb_likebox_show_faces']));
+      variable_set('fb_likebox_width', check_plain($edit['fb_likebox_width']));
+      variable_set('fb_likebox_height', check_plain($edit['fb_likebox_height']));
+      variable_set('fb_likebox_title', check_plain($edit['fb_likebox_title']));
+      variable_set('fb_likebox_hide_cta', check_plain($edit['fb_likebox_hide_cta']));
+      variable_set('fb_likebox_small_header', check_plain($edit['fb_likebox_small_header']));
+      variable_set('fb_likebox_adapt_container_width', check_plain($edit['fb_likebox_adapt_container_width']));
+      variable_set('fb_likebox_language', check_plain($edit['fb_likebox_language']));
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Adds validation of block configuration custom fields.
+ */
+function fb_likebox_form_block_admin_configure_alter(&$form, &$form_state, $form_id) {
+  if ($form['module']['#value'] == 'fb_likebox') {
+    $form['#validate'][] = '_fb_likebox_validate_block_settings';
+  }
+}
+
+
+/**
+ * Perform the validation of the block settings.
+ */
+function _fb_likebox_validate_block_settings(&$form, $form_state) {
+  // Facebook display settings validation.
+  $fb_url = $form_state['values']['fb_likebox_url'];
+  if (!valid_url($fb_url, TRUE)) {
+    form_set_error('fb_likebox_url', t('Please enter a valid url.'));
+  }
+
+  // Facebook theming settings validation.
+  $fb_width = $form_state['values']['fb_likebox_width'];
+  if (!is_numeric($fb_width) || intval($fb_width) < 180 || intval($fb_width) > 500) {
+    form_set_error('fb_likebox_width', t('Width should be a number between 180 and 500, limits included.'));
+  }
+
+  $fb_height = $form_state['values']['fb_likebox_height'];
+  if (!is_numeric($fb_height) || intval($fb_height) < 70) {
+    form_set_error('fb_likebox_height', t('Height should be a number equal or larger than 70.'));
+  }
+}
+
+/**
+ * Builds the link needed to connect with facebook.
+ */
+function _fb_likebox_block_view() {
+  // Get the values given in the admin form.
+  $fb_url = variable_get('fb_likebox_url', 'https://www.facebook.com/FacebookDevelopers');
+  $fb_app_id = variable_get('fb_likebox_app_id', '');
+  $fb_hide_header = variable_get('fb_likebox_hide_header', 'false');
+  $fb_tabs = array();
+  if( variable_get('fb_likebox_stream') == 1){
+    $fb_tabs[] = 'timeline';
+  }
+  if(variable_get('fb_likebox_events') == 1){
+    $fb_tabs[] = 'events';
+  }
+  if(variable_get('fb_likebox_messages') == 1){
+    $fb_tabs[] = 'messages';
+  }
+  $fb_show_faces = variable_get('fb_likebox_show_faces', 'true');
+  $fb_width = variable_get('fb_likebox_width', '340');
+  $fb_height = variable_get('fb_likebox_height', '500');
+  $fb_iframe_title = variable_get('fb_likebox_title', 'Like us on Facebook');
+  $fb_hide_cta = variable_get('fb_likebox_hide_cta', 'false');
+  $fb_small_header = variable_get('fb_likebox_small_header', 'false');
+  $fb_adapt_container_width = variable_get('fb_likebox_adapt_container_width', 'true');
+  $fb_language = variable_get('fb_likebox_language', 'en_EN');
+
+  $block['block'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('fb-page'),
+      'data-href' => array($fb_url),
+      'data-width' => array($fb_width),
+      'data-height' => array($fb_height),
+      'data-tabs' => array( implode(',', $fb_tabs)),
+      'data-hide-cover' => array($fb_hide_header),
+      'data-show-facepile' => array($fb_show_faces),
+      'data-hide-cta' => array($fb_hide_cta),
+      'data-small-header' => array($fb_small_header),
+      'data-adapt-container-width' => array($fb_adapt_container_width),
+    ),
+  );
+  $block['block']['child'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('fb-xfbml-parse-ignore'),
+    ),
+  );
+  $block['block']['child']['blockquote'] = array(
+    '#type' => 'link',
+    '#title' => $fb_iframe_title,
+    '#href' => $fb_url,
+    '#suffix' => '</blockquote>',
+    '#prefix' => '<blockquote cite="' . $fb_url . '">',
+  );
+  $block['#attached']['js'] = array(
+    drupal_get_path('module', 'fb_likebox') . '/fb_likebox.js',
+    array(
+      'data' => array(
+        'fb_likebox_app_id' => $fb_app_id,
+        'fb_likebox_language' => $fb_language,
+      ),
+      'type' => 'setting',
+    ),
+  );
+  return $block;
+}
+
+
+/**
+ * Array with supported languages
+ */
+function _fb_likebox_languages() {
+  $languages = array(
+    'af_ZA' => t('Afrikaans'),
+    'ak_GH' => t('Akan'),
+    'am_ET' => t('Amharic'),
+    'ar_AR' => t('Arabic'),
+    'as_IN' => t('Assamese'),
+    'ay_BO' => t('Aymara'),
+    'az_AZ' => t('Azerbaijani'),
+    'be_BY' => t('Belarusian'),
+    'bg_BG' => t('Bulgarian'),
+    'bn_IN' => t('Bengali'),
+    'br_FR' => t('Breton'),
+    'bs_BA' => t('Bosnian'),
+    'ca_ES' => t('Catalan'),
+    'cb_IQ' => t('Sorani Kurdish'),
+    'ck_US' => t('Cherokee'),
+    'co_FR' => t('Corsican'),
+    'cs_CZ' => t('Czech'),
+    'cx_PH' => t('Cebuano'),
+    'cy_GB' => t('Welsh'),
+    'da_DK' => t('Danish'),
+    'de_DE' => t('German'),
+    'el_GR' => t('Greek'),
+    'en_EN' => t('English'),
+    'en_GB' => t('English (UK)'),
+    'en_IN' => t('English (India)'),
+    'en_PI' => t('English (Pirate)'),
+    'en_UD' => t('English (Upside Down)'),
+    'en_US' => t('English (US)'),
+    'eo_EO' => t('Esperanto'),
+    'es_CL' => t('Spanish (Chile)'),
+    'es_CO' => t('Spanish (Colombia)'),
+    'es_ES' => t('Spanish (Spain)'),
+    'es_LA' => t('Spanish'),
+    'es_MX' => t('Spanish (Mexico)'),
+    'es_VE' => t('Spanish (Venezuela)'),
+    'et_EE' => t('Estonian'),
+    'eu_ES' => t('Basque'),
+    'fa_IR' => t('Persian'),
+    'fb_LT' => t('Leet Speak'),
+    'ff_NG' => t('Fulah'),
+    'fi_FI' => t('Finnish'),
+    'fo_FO' => t('Faroese'),
+    'fr_CA' => t('French (Canada)'),
+    'fr_FR' => t('French (France)'),
+    'fy_NL' => t('Frisian'),
+    'ga_IE' => t('Irish'),
+    'gl_ES' => t('Galician'),
+    'gn_PY' => t('Guarani'),
+    'gu_IN' => t('Gujarati'),
+    'gx_GR' => t('Classical Greek'),
+    'ha_NG' => t('Hausa'),
+    'he_IL' => t('Hebrew'),
+    'hi_IN' => t('Hindi'),
+    'hr_HR' => t('Croatian'),
+    'hu_HU' => t('Hungarian'),
+    'hy_AM' => t('Armenian'),
+    'id_ID' => t('Indonesian'),
+    'ig_NG' => t('Igbo'),
+    'is_IS' => t('Icelandic'),
+    'it_IT' => t('Italian'),
+    'ja_JP' => t('Japanese'),
+    'ja_KS' => t('Japanese (Kansai)'),
+    'jv_ID' => t('Javanese'),
+    'ka_GE' => t('Georgian'),
+    'kk_KZ' => t('Kazakh'),
+    'km_KH' => t('Khmer'),
+    'kn_IN' => t('Kannada'),
+    'ko_KR' => t('Korean'),
+    'ku_TR' => t('Kurdish (Kurmanji)'),
+    'la_VA' => t('Latin'),
+    'lg_UG' => t('Ganda'),
+    'li_NL' => t('Limburgish'),
+    'ln_CD' => t('Lingala'),
+    'lo_LA' => t('Lao'),
+    'lt_LT' => t('Lithuanian'),
+    'lv_LV' => t('Latvian'),
+    'mg_MG' => t('Malagasy'),
+    'mk_MK' => t('Macedonian'),
+    'ml_IN' => t('Malayalam'),
+    'mn_MN' => t('Mongolian'),
+    'mr_IN' => t('Marathi'),
+    'ms_MY' => t('Malay'),
+    'mt_MT' => t('Maltese'),
+    'my_MM' => t('Burmese'),
+    'nb_NO' => t('Norwegian (bokmal)'),
+    'nd_ZW' => t('Ndebele'),
+    'ne_NP' => t('Nepali'),
+    'nl_BE' => t('Dutch (Belgium  )'),
+    'nl_NL' => t('Dutch'),
+    'nn_NO' => t('Norwegian (nynorsk)'),
+    'ny_MW' => t('Chewa'),
+    'or_IN' => t('Oriya'),
+    'pa_IN' => t('Punjabi'),
+    'pl_PL' => t('Polish'),
+    'ps_AF' => t('Pashto'),
+    'pt_BR' => t('Portuguese (Brazil)'),
+    'pt_PT' => t('Portuguese (Portugal)'),
+    'qu_PE' => t('Quechua'),
+    'rm_CH' => t('Romansh'),
+    'ro_RO' => t('Romanian'),
+    'ru_RU' => t('Russian'),
+    'rw_RW' => t('Kinyarwanda'),
+    'sa_IN' => t('Sanskrit'),
+    'sc_IT' => t('Sardinian'),
+    'se_NO' => t('Northern Sámi'),
+    'si_LK' => t('Sinhala'),
+    'sk_SK' => t('Slovak'),
+    'sl_SI' => t('Slovenian'),
+    'sn_ZW' => t('Shona'),
+    'so_SO' => t('Somali'),
+    'sq_AL' => t('Albanian'),
+    'sr_RS' => t('Serbian'),
+    'sv_SE' => t('Swedish'),
+    'sw_KE' => t('Swahili'),
+    'sy_SY' => t('Syriac'),
+    'sz_PL' => t('Silesian'),
+    'ta_IN' => t('Tamil'),
+    'te_IN' => t('Telugu'),
+    'tg_TJ' => t('Tajik'),
+    'th_TH' => t('Thai'),
+    'tk_TM' => t('Turkmen'),
+    'tl_PH' => t('Filipino'),
+    'tl_ST' => t('Klingon'),
+    'tr_TR' => t('Turkish'),
+    'tt_RU' => t('Tatar'),
+    'tz_MA' => t('Tamazight'),
+    'uk_UA' => t('Ukrainian'),
+    'ur_PK' => t('Urdu'),
+    'uz_UZ' => t('Uzbek'),
+    'vi_VN' => t('Vietnamese'),
+    'wo_SN' => t('Wolof'),
+    'xh_ZA' => t('Xhosa'),
+    'yi_DE' => t('Yiddish'),
+    'yo_NG' => t('Yoruba'),
+    'zh_CN' => t('Simplified Chinese (China)'),
+    'zh_HK' => t('Traditional Chinese (Hong Kong)'),
+    'zh_TW' => t('Traditional Chinese (Taiwan)'),
+    'zu_ZA' => t('Zulu'),
+    'zz_TR' => t('Zazaki'),
+  );
+
+  asort($languages);
+
+  return $languages;
+}
