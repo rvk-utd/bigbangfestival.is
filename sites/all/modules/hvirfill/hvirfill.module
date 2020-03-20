@@ -223,7 +223,7 @@
         hvirfill_add_facebook_tag('type', 'website');
         hvirfill_add_facebook_tag('title', $title);
         hvirfill_add_facebook_tag('description', $text);
-        hvirfill_add_facebook_tag('image', $server . '/images/' . $event['image']['medium']);
+        hvirfill_add_facebook_tag('image', $server . $event['image']['medium']);
         hvirfill_add_facebook_tag('url', $GLOBALS['base_url'] . $_SERVER['REQUEST_URI']);
         hvirfill_add_facebook_tag('locale', $lang == 'is' ? 'is_IS' : 'en_US');
     }

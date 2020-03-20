@@ -63,7 +63,7 @@
 
     rivets.binders['img-*'] = function(el, item) {
         var size = this.args[0] || 'medium'
-        el.src = HVIRFILL.url + '/images/' + item.image[size];
+        el.src = HVIRFILL.url + item.image[size];
     }
 
     rivets.binders['lang-*'] = function(el, item) {
